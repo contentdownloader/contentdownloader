@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Download, Link, Instagram, Facebook, TestTube } from 'lucide-react';
+import { Download, Link, Instagram, Facebook } from 'lucide-react'; // Removed TestTube icon
 
+// Updated interface: 'platform' no longer includes 'test'
 interface DownloadFormProps {
   onDownload: (url: string, platform: 'instagram' | 'facebook', contentType: 'post' | 'story' | 'reel' | 'highlight') => void;
   disabled?: boolean;
@@ -8,30 +9,31 @@ interface DownloadFormProps {
 
 export const DownloadForm: React.FC<DownloadFormProps> = ({ onDownload, disabled = false }) => {
   const [url, setUrl] = useState('');
-  const [platform, setPlatform] = useState<'instagram' | 'facebook'>('instagram');
+  const [platform, setPlatform] = useState<'instagram' | 'facebook'>('instagram'); // 'platform' state no longer includes 'test'
   const [contentType, setContentType] = useState<'post' | 'story' | 'reel' | 'highlight'>('post');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (url.trim() && !disabled) {
+    // Only proceed if URL is valid and form is not disabled
+    if (url.trim() && isValidUrl(url) && !disabled) {
+      // Always pass the selected platform, no 'test' routing here
       onDownload(url.trim(), platform, contentType);
-      setUrl('');
+      setUrl(''); // Clear URL field after submission
     }
   };
 
-  const handleTestDownload = () => {
-    const testUrl = `https://test-content.example.com/${contentType}`;
-    onDownload(testUrl, platform, contentType);
-  };
-
-  const isValidUrl = (url: string) => {
-    if (url.includes('test-content') || url.includes('demo')) return true;
-    
+  // Simplified isValidUrl: no longer checks for test/demo URLs
+  const isValidUrl = (inputUrl: string): boolean => {
     try {
-      new URL(url);
-      return url.includes('instagram.com') || url.includes('facebook.com') || url.includes('fb.watch');
+      const parsedUrl = new URL(inputUrl);
+      const hostname = parsedUrl.hostname;
+      
+      const instagramRegex = /^(www\.)?instagram\.com$/i;
+      const facebookRegex = /^(www\.)?facebook\.com$|^(web\.)?facebook\.com$|^fb\.watch$/i;
+
+      return instagramRegex.test(hostname) || facebookRegex.test(hostname);
     } catch {
-      return false;
+      return false; // Invalid URL format
     }
   };
 
@@ -47,6 +49,7 @@ export const DownloadForm: React.FC<DownloadFormProps> = ({ onDownload, disabled
                 Select Platform
               </label>
               <div className="grid grid-cols-2 gap-3">
+                {/* Instagram Button */}
                 <button
                   type="button"
                   onClick={() => setPlatform('instagram')}
@@ -60,6 +63,7 @@ export const DownloadForm: React.FC<DownloadFormProps> = ({ onDownload, disabled
                   <Instagram className="h-5 w-5" />
                   <span className="font-medium">Instagram</span>
                 </button>
+                {/* Facebook Button */}
                 <button
                   type="button"
                   onClick={() => setPlatform('facebook')}
@@ -77,10 +81,11 @@ export const DownloadForm: React.FC<DownloadFormProps> = ({ onDownload, disabled
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
+              <label htmlFor="contentType" className="block text-sm font-semibold text-gray-700 mb-3">
                 Content Type
               </label>
               <select
+                id="contentType"
                 value={contentType}
                 onChange={(e) => setContentType(e.target.value as 'post' | 'story' | 'reel' | 'highlight')}
                 disabled={disabled}
@@ -104,15 +109,16 @@ export const DownloadForm: React.FC<DownloadFormProps> = ({ onDownload, disabled
                   id="url"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  placeholder={`Paste ${platform} URL here...`}
+                  placeholder={`Paste ${platform} URL here...`} // Placeholder still uses selected platform
                   disabled={disabled}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 disabled:cursor-not-allowed"
                   required
+                  pattern="https?://.+" title="Please enter a valid URL (starting with http:// or https://)"
                 />
               </div>
-              {url && !isValidUrl(url) && (
+              {url.trim() && !isValidUrl(url) && (
                 <p className="mt-2 text-sm text-red-600">
-                  Please enter a valid Instagram or Facebook URL
+                  Please enter a valid Instagram or Facebook URL.
                 </p>
               )}
             </div>
@@ -128,25 +134,29 @@ export const DownloadForm: React.FC<DownloadFormProps> = ({ onDownload, disabled
               <span>{disabled ? 'Server Offline' : 'Download Content'}</span>
             </button>
 
-            <button
+            {/* REMOVED: Test Download Button */}
+            {/* <button
               type="button"
               onClick={handleTestDownload}
               disabled={disabled}
-              className="w-full bg-gradient-to-r from-green-600 to-teal-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-green-700 hover:to-teal-700 focus:ring-4 focus:ring-green-200 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              className="..."
             >
               <TestTube className="h-5 w-5" />
               <span>Try Test Download</span>
-            </button>
+            </button> */}
           </div>
         </form>
 
         <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
           <h4 className="font-semibold text-blue-800 mb-2">How to use:</h4>
           <ul className="text-sm text-blue-700 space-y-1">
-            <li>• Copy a public Instagram or Facebook post URL</li>
-            <li>• Paste it in the URL field above</li>
-            <li>• Click "Download Content" to process</li>
-            <li>• Use "Try Test Download" to test with sample content</li>
+            <li>• Select a platform (Instagram or Facebook).</li>
+            <li>• Choose the content type (Post, Story, Reel, Highlight).</li>
+            <li>• Copy a public content URL (e.g., a photo, video, or reel link).</li>
+            <li>• Paste it in the URL field above.</li>
+            <li>• Click "Download Content" to start.</li>
+            {/* REMOVED: Test download instruction */}
+            {/* <li>• Use "Try Test Download" to test with sample content without a real URL.</li> */}
           </ul>
         </div>
       </div>
