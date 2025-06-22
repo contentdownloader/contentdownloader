@@ -1,20 +1,26 @@
 services:
   - type: web
-    name: social-media-downloader-client
+    name: social-media-downloader-backend
     env: node
-    buildCommand: npm install && npm run build
-    startCommand: npm run preview
-    rootDir: client
-    envVars:
-      - key: NODE_VERSION
-        value: 18
-
-  - type: web
-    name: social-media-downloader-server
-    env: node
+    plan: free
     buildCommand: npm install
     startCommand: npm run server
     rootDir: server
     envVars:
       - key: NODE_VERSION
         value: 18
+
+  - type: web
+    name: social-media-downloader-frontend
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run preview
+    rootDir: client
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+      - key: VITE_API_BASE_URL
+        value: https://social-media-downloader-backend.onrender.com
+    dependsOn:
+      - serviceId: social-media-downloader-backend
