@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: social-media-downloader-client
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm run preview
+    rootDir: client
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+
+  - type: web
+    name: social-media-downloader-server
+    env: node
+    buildCommand: npm install
+    startCommand: npm run server
+    rootDir: server
+    envVars:
+      - key: NODE_VERSION
+        value: 18
